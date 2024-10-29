@@ -1,0 +1,47 @@
+services:
+  wordpress:
+    image: wordpress:latest
+    restart: always
+    env_file: .env
+    depends_on:
+      - db
+    ports:
+      - 80:80
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER:  ${WORDPRESS_DB_USER}
+      WORDPRESS_DB_PASSWORD:  ${WORDPRESS_DB_PASSWORD}
+      WORDPRESS_DB_NAME:  ${WORDPRESS_DB_NAME}
+    volumes:
+      - wordpress:/var/www/html
+
+  db:
+    image: mysql:8.0
+    restart: always
+    env_file: .env
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db:/var/lib/mysql
+      - ./databases:/docker-entrypoint-initdb.d  
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    restart: always
+    ports:
+      - 8080:80
+    environment:
+      - PMA_ARBITRARY=1
+    depends_on:
+      - db
+
+volumes:
+  db:
+  wordpress:
+    driver: local
+    driver_opts:
+      type: none
+      device: ./wordpress
+      o: bind
